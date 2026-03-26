@@ -1,52 +1,88 @@
+const INTENT_META = {
+  RANKING:     { color: '#6366F1', bg: '#EEF2FF', gradient: 'linear-gradient(135deg,#6366F1,#8B5CF6)', label: 'Ranking'     },
+  TENDENCIA:   { color: '#10B981', bg: '#D1FAE5', gradient: 'linear-gradient(135deg,#10B981,#06B6D4)', label: 'Tendencia'   },
+  COMPARATIVA: { color: '#F59E0B', bg: '#FEF3C7', gradient: 'linear-gradient(135deg,#F59E0B,#EF4444)', label: 'Comparativa' },
+  ANOMALIA:    { color: '#EF4444', bg: '#FEE2E2', gradient: 'linear-gradient(135deg,#EF4444,#F59E0B)', label: 'Anomalía'    },
+  AGREGACION:  { color: '#06B6D4', bg: '#ECFEFF', gradient: 'linear-gradient(135deg,#06B6D4,#6366F1)', label: 'Agregación'  },
+}
+
 export default function ApprovalCard({ msg, onApprove, loading }) {
-  const intentColors = {
-    RANKING: { bg: '#EEF2FF', text: '#3730a3' },
-    TENDENCIA: { bg: '#D1FAE5', text: '#065f46' },
-    COMPARATIVA: { bg: '#FEF3C7', text: '#92400e' },
-    ANOMALIA: { bg: '#FEE2E2', text: '#991b1b' },
-    AGREGACION: { bg: '#F3F4F6', text: '#374151' },
-  }
-  const ic = intentColors[msg.intent] || intentColors.AGREGACION
+  const im = INTENT_META[msg.intent] || INTENT_META.AGREGACION
 
   return (
     <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 12, padding: 14, maxWidth: 480,
+      background: 'var(--surface)', borderRadius: 14, maxWidth: 460,
+      boxShadow: 'var(--shadow-md)',
+      border: '1px solid var(--border)',
+      overflow: 'hidden',
+      animation: 'slideUp 0.25s ease',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)' }}>SQL generado</span>
-        <span style={{
-          fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 4,
-          background: ic.bg, color: ic.text, letterSpacing: '0.04em',
-        }}>{msg.intent}</span>
-        {msg.sensitive && (
-          <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'var(--coral-bg)', color: 'var(--coral-text)', fontWeight: 600 }}>SENSIBLE</span>
-        )}
-      </div>
-      <pre style={{
-        fontFamily: 'var(--mono)', fontSize: 11.5, background: 'var(--cloud)',
-        border: '1px solid var(--border-soft)', borderRadius: 8, padding: '10px 12px',
-        color: '#374151', overflowX: 'auto', lineHeight: 1.6, marginBottom: 12,
-        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-      }}>{msg.sql}</pre>
-      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
-        Revisá el SQL antes de ejecutar. Una vez aprobado se correrá contra tus datos.
-      </p>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => onApprove(msg.queryId, true)} disabled={loading} style={{
-          padding: '7px 18px', background: 'var(--indigo)', color: 'white',
-          border: 'none', borderRadius: 8, fontWeight: 500, cursor: 'pointer',
-          fontSize: 13, opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s',
+      {/* Tira de color por intent */}
+      <div style={{ height: 4, background: im.gradient }} />
+
+      <div style={{ padding: '14px 16px' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+            background: im.bg, color: im.color,
+            padding: '3px 9px', borderRadius: 20,
+            border: `1px solid ${im.color}30`,
+          }}>{im.label.toUpperCase()}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>SQL generado · revisión requerida</span>
+          {msg.sensitive && (
+            <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, background: '#FEF3C7', color: '#92400e', padding: '2px 8px', borderRadius: 10 }}>
+              ⚠ SENSIBLE
+            </span>
+          )}
+        </div>
+
+        {/* SQL block */}
+        <div style={{
+          background: '#0F172A', borderRadius: 10, padding: '12px 14px',
+          marginBottom: 14, position: 'relative',
+          border: '1px solid #1e2438',
         }}>
-          {loading ? 'Ejecutando…' : 'Aprobar y ejecutar'}
-        </button>
-        <button onClick={() => onApprove(msg.queryId, false)} disabled={loading} style={{
-          padding: '7px 14px', background: 'transparent', color: 'var(--text-secondary)',
-          border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', fontSize: 13,
-        }}>
-          Rechazar
-        </button>
+          <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+            {['#FF5F57','#FFBD2E','#28CA41'].map(c => (
+              <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
+            ))}
+          </div>
+          <pre style={{
+            fontFamily: 'var(--mono)', fontSize: 12, color: '#E2E8F0',
+            overflowX: 'auto', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0,
+          }}>{msg.sql}</pre>
+        </div>
+
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
+          Revisá el SQL antes de ejecutar. El resultado se visualizará automáticamente.
+        </p>
+
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => onApprove(msg.queryId, true)} disabled={loading} style={{
+            flex: 1, padding: '9px', borderRadius: 9, border: 'none',
+            background: loading ? '#A5B4FC' : 'linear-gradient(135deg,#6366F1,#8B5CF6)',
+            color: 'white', fontWeight: 600, fontSize: 13, cursor: loading ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
+            transition: 'transform 0.1s, box-shadow 0.1s',
+          }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow='0 6px 16px rgba(99,102,241,0.4)' }}}
+            onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 4px 12px rgba(99,102,241,0.3)' }}
+          >
+            {loading ? '⏳ Ejecutando…' : '✓ Aprobar y ejecutar'}
+          </button>
+          <button onClick={() => onApprove(msg.queryId, false)} disabled={loading} style={{
+            padding: '9px 16px', borderRadius: 9, border: '1.5px solid var(--border)',
+            background: 'var(--surface)', color: 'var(--text-secondary)',
+            fontSize: 13, cursor: 'pointer', fontWeight: 500,
+            transition: 'border-color 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.borderColor='var(--coral)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor='var(--border)'}
+          >Rechazar</button>
+        </div>
       </div>
+      <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   )
 }

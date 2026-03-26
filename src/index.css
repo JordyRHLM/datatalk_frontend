@@ -1,12 +1,16 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --ink: #0f1117;
-  --ink-soft: #1a1d27;
-  --indigo: #4F46E5;
+  --ink: #0a0e1a;
+  --ink-soft: #141829;
+  --ink-border: #1e2438;
+  --indigo: #6366F1;
+  --indigo-hover: #4F46E5;
   --indigo-light: #EEF2FF;
-  --indigo-dim: #3730a3;
-  --mint: #6EE7B7;
+  --indigo-dim: #4338CA;
+  --violet: #8B5CF6;
+  --cyan: #06B6D4;
+  --mint: #10B981;
   --mint-bg: #D1FAE5;
   --mint-text: #065f46;
   --amber: #F59E0B;
@@ -15,19 +19,32 @@
   --coral: #EF4444;
   --coral-bg: #FEE2E2;
   --coral-text: #991b1b;
-  --cloud: #F8F9FB;
+  --cloud: #F8FAFF;
   --surface: #ffffff;
-  --border: #E5E7EB;
-  --border-soft: #F3F4F6;
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-tertiary: #9CA3AF;
+  --surface-raised: #FAFBFF;
+  --border: #E8ECF4;
+  --border-soft: #F1F4FA;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-tertiary: #94A3B8;
   --mono: 'Courier New', monospace;
+
+  --shadow-sm: 0 1px 3px rgba(99,102,241,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(99,102,241,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-card: 0 2px 8px rgba(99,102,241,0.07), 0 1px 3px rgba(0,0,0,0.05);
 }
 
 html, body, #root { height: 100%; }
-body { font-family: system-ui, -apple-system, sans-serif; background: var(--cloud); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: var(--cloud);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }

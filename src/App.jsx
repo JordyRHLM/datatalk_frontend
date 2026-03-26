@@ -36,7 +36,7 @@ export default function App() {
       <Sidebar active={activeTab} onChange={setActiveTab} user={user} onLogout={logout} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Header schema={schema} activeTab={activeTab} fileName={fileName} />
+        <Header schema={schema} activeTab={activeTab} fileName={fileName} result={result} />
 
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
           {activeTab === 'dashboard' && (
