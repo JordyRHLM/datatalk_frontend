@@ -1,31 +1,55 @@
 import { useState, useCallback } from 'react'
-import { uploadFile, sendQuery, approveQuery } from '../lib/api'
+import { uploadFile, sendQuery, approveQuery, listFiles } from '../lib/api'
 
-export function useDataTalk() {
-  const [userId] = useState('demo@empresa.com')
+export function useDataTalk(user) {
   const [filePath, setFilePath] = useState(null)
+  const [fileName, setFileName] = useState(null)
   const [schema, setSchema] = useState(null)
   const [messages, setMessages] = useState([])
-  const [pending, setPending] = useState(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
+  const [availableFiles, setAvailableFiles] = useState([])
 
-  const addMsg = (msg) => setMessages(prev => [...prev, { id: Date.now(), ...msg }])
+  const userId = user?.user_id || user?.email || 'demo_user'
+
+  const addMsg = (msg) => setMessages(prev => [...prev, { id: Date.now() + Math.random(), ...msg }])
+
+  const loadAvailableFiles = useCallback(async () => {
+    try {
+      const { data } = await listFiles()
+      setAvailableFiles(data.files || [])
+    } catch {
+      // fallback silencioso
+      setAvailableFiles([])
+    }
+  }, [])
+
+  const handleSelectFile = useCallback(async (fp, fn) => {
+    setFilePath(fp)
+    setFileName(fn)
+    setMessages([])
+    setResult(null)
+    addMsg({ type: 'system', text: `Archivo seleccionado: ${fn}` })
+  }, [])
 
   const handleUpload = useCallback(async (file) => {
     setLoading(true)
     try {
       const { data } = await uploadFile(file, userId)
       setFilePath(data.file_path)
+      setFileName(file.name)
       setSchema(data)
-      addMsg({ type: 'system', text: `Archivo cargado: ${file.name} · ${data.row_count} filas · ${data.columns.length} columnas` })
-      if (data.sensitive) addMsg({ type: 'warning', text: 'Este archivo contiene datos sensibles. Las consultas quedarán registradas.' })
-    } catch (e) {
+      setMessages([])
+      setResult(null)
+      addMsg({ type: 'system', text: `✓ ${file.name} · ${data.row_count.toLocaleString()} filas · ${data.columns.length} columnas` })
+      if (data.sensitive) addMsg({ type: 'warning', text: 'Archivo con datos sensibles — acceso auditado' })
+      await loadAvailableFiles()
+    } catch {
       addMsg({ type: 'error', text: 'Error al cargar el archivo. Verificá el formato.' })
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, loadAvailableFiles])
 
   const handleQuestion = useCallback(async (question) => {
     if (!filePath) return
@@ -33,10 +57,9 @@ export function useDataTalk() {
     setLoading(true)
     try {
       const { data } = await sendQuery(question, filePath, userId)
-      setPending(data)
       addMsg({ type: 'approval', queryId: data.query_id, intent: data.intent, sql: data.sql, sensitive: data.sensitive })
-    } catch (e) {
-      addMsg({ type: 'error', text: 'Error generando la consulta. Intentá reformular la pregunta.' })
+    } catch {
+      addMsg({ type: 'error', text: 'Error generando la consulta. Intentá reformular.' })
     } finally {
       setLoading(false)
     }
@@ -46,23 +69,20 @@ export function useDataTalk() {
     setLoading(true)
     try {
       const { data } = await approveQuery(queryId, userId, approved)
-      setPending(null)
-      if (!approved) {
-        addMsg({ type: 'system', text: 'Consulta rechazada.' })
-        return
-      }
-      if (!data.success) {
-        addMsg({ type: 'error', text: data.message })
-        return
-      }
+      if (!approved) { addMsg({ type: 'system', text: 'Consulta rechazada.' }); return }
+      if (!data.success) { addMsg({ type: 'error', text: data.message }); return }
       setResult(data)
       addMsg({ type: 'result', text: data.explanation, chart: data.chart, rowCount: data.data?.length })
-    } catch (e) {
+    } catch {
       addMsg({ type: 'error', text: 'Error ejecutando la consulta.' })
     } finally {
       setLoading(false)
     }
   }, [userId])
 
-  return { schema, messages, loading, result, filePath, handleUpload, handleQuestion, handleApprove }
+  return {
+    schema, messages, loading, result, filePath, fileName,
+    availableFiles, loadAvailableFiles,
+    handleUpload, handleSelectFile, handleQuestion, handleApprove,
+  }
 }

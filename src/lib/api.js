@@ -5,6 +5,19 @@ const api = axios.create({
   timeout: 30000,
 })
 
+api.interceptors.request.use(cfg => {
+  const token = localStorage.getItem('dt_token')
+  if (token) cfg.headers.Authorization = `Bearer ${token}`
+  return cfg
+})
+
+export const login = (username, password) =>
+  api.post('/auth/login', { username, password })
+
+export const getMe = () => api.get('/auth/me')
+
+export const listFiles = () => api.get('/files')
+
 export const uploadFile = (file, userId) => {
   const form = new FormData()
   form.append('file', file)
@@ -18,5 +31,5 @@ export const sendQuery = (question, filePath, userId) =>
 export const approveQuery = (queryId, approvedBy, approved = true) =>
   api.post('/approve', { query_id: queryId, approved, approved_by: approvedBy })
 
-export const getHistory = (limit = 20) =>
+export const getHistory = (limit = 50) =>
   api.get(`/history?limit=${limit}`)
